@@ -1,0 +1,6 @@
+{
+  "appId": "com.snake.game",
+  "appName": "贪吃蛇游戏",
+  "webDir": "www",
+  "backgroundColor": "#34495e"
+}

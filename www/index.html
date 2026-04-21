@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#2ecc71">
+    <meta name="description" content="经典贪吃蛇游戏，支持触控操作">
+    <title>贪吃蛇游戏</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/png" href="icon-192.png">
+    <link rel="apple-touch-icon" href="icon-192.png">
+</head>
+<body>
+    <div class="game-container">
+        <canvas id="gameCanvas" width="400" height="400"></canvas>
+        <div class="score-board">得分: <span id="score">0</span></div>
+        <div class="game-status" id="gameStatus">点击"开始游戏"开始</div>
+        <div class="difficulty-buttons">
+            <button id="easyMode" class="difficulty-button active">简单模式</button>
+            <button id="normalMode" class="difficulty-button">一般模式</button>
+            <button id="hardMode" class="difficulty-button">困难模式</button>
+        </div>
+        <div class="control-buttons">
+            <button id="startBtn" class="control-button">开始游戏</button>
+            <button id="resetBtn" class="control-button">重置游戏</button>
+        </div>
+        <div class="virtual-pad">
+            <div class="pad-row">
+                <button id="btnUp" class="pad-button">↑</button>
+            </div>
+            <div class="pad-row">
+                <button id="btnLeft" class="pad-button">←</button>
+                <button id="btnDown" class="pad-button">↓</button>
+                <button id="btnRight" class="pad-button">→</button>
+            </div>
+        </div>
+    </div>
+    <script src="game.js"></script>
+    <script>
+        // 注册 Service Worker
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js');
+        }
+    </script>
+</body>
+</html>

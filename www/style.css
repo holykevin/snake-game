@@ -1,0 +1,143 @@
+.difficulty-buttons {
+    margin-top: 20px;
+}
+
+.difficulty-button {
+    padding: 10px 20px;
+    margin: 0 5px;
+    background-color: #3498db;
+    border: none;
+    border-radius: 5px;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.difficulty-button.active {
+    background-color: #2ecc71;
+    border: 2px solid #27ae60;
+}
+
+.difficulty-button:hover {
+    background-color: #2980b9;
+}
+
+.control-buttons {
+    margin-top: 15px;
+}
+
+.control-button {
+    padding: 10px 25px;
+    margin: 0 8px;
+    background-color: #2ecc71;
+    border: none;
+    border-radius: 5px;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.control-button:hover {
+    background-color: #27ae60;
+}
+
+#resetBtn {
+    background-color: #e74c3c;
+}
+
+#resetBtn:hover {
+    background-color: #c0392b;
+}
+
+.game-status {
+    margin-top: 10px;
+    font-size: 18px;
+    color: #2c3e50;
+    font-weight: bold;
+}
+
+/* 虚拟方向键样式 */
+.virtual-pad {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+}
+
+.pad-row {
+    display: flex;
+    gap: 5px;
+}
+
+.pad-button {
+    width: 60px;
+    height: 60px;
+    font-size: 24px;
+    background-color: #34495e;
+    border: none;
+    border-radius: 10px;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    touch-action: manipulation;
+}
+
+.pad-button:active {
+    background-color: #2ecc71;
+}
+
+/* 游戏容器居中 */
+.game-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    font-family: Arial, sans-serif;
+}
+
+.score-board {
+    font-size: 20px;
+    margin-top: 10px;
+    color: #2c3e50;
+}
+
+/* 响应式设计 */
+@media (max-width: 500px) {
+    #gameCanvas {
+        width: 300px;
+        height: 300px;
+    }
+
+    .difficulty-button {
+        padding: 8px 12px;
+        font-size: 14px;
+    }
+
+    .control-button {
+        padding: 8px 16px;
+        font-size: 14px;
+    }
+
+    .pad-button {
+        width: 55px;
+        height: 55px;
+        font-size: 20px;
+    }
+
+    .game-status {
+        font-size: 16px;
+    }
+
+    .score-board {
+        font-size: 18px;
+    }
+}
+
+/* 隐藏桌面端虚拟方向键 */
+@media (hover: hover) and (pointer: fine) {
+    .virtual-pad {
+        display: none;
+    }
+}

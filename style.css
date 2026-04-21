@@ -95,6 +95,14 @@
     align-items: center;
     padding: 20px;
     font-family: Arial, sans-serif;
+    background-color: #ecf0f1;
+    min-height: 100vh;
+}
+
+#gameCanvas {
+    border: 4px solid #2c3e50;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
 }
 
 .score-board {

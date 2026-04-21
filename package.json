@@ -4,7 +4,7 @@
   "description": "",
   "main": "game.js",
   "scripts": {
-    "sync": "cap sync android",
+    "sync": "node node_modules/@capacitor/cli/bin/capacitor sync android",
     "build:android": "cd android && ./gradlew assembleDebug"
   },
   "repository": {

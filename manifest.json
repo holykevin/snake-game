@@ -4,7 +4,7 @@
     "description": "经典贪吃蛇游戏，支持触控操作",
     "start_url": "./",
     "scope": "./",
-    "display": "standalone",
+    "display": "fullscreen",
     "background_color": "#34495e",
     "theme_color": "#2ecc71",
     "orientation": "portrait",

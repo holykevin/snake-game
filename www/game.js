@@ -101,15 +101,36 @@ function drawGame() {
     ctx.fillStyle = '#34495e';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
+    // 绘制网格线
+    ctx.strokeStyle = '#4a6278';
+    ctx.lineWidth = 0.5;
+    for (let i = 0; i <= tileCount; i++) {
+        // 垂直线
+        ctx.beginPath();
+        ctx.moveTo(i * gridSize, 0);
+        ctx.lineTo(i * gridSize, canvas.height);
+        ctx.stroke();
+        // 水平线
+        ctx.beginPath();
+        ctx.moveTo(0, i * gridSize);
+        ctx.lineTo(canvas.width, i * gridSize);
+        ctx.stroke();
+    }
+
+    // 绘制边界框
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth = 3;
+    ctx.strokeRect(0, 0, canvas.width, canvas.height);
+
     // 绘制蛇身
     ctx.fillStyle = '#2ecc71';
     snake.forEach((segment) => {
-        ctx.fillRect(segment.x * gridSize, segment.y * gridSize, gridSize - 2, gridSize - 2);
+        ctx.fillRect(segment.x * gridSize + 1, segment.y * gridSize + 1, gridSize - 2, gridSize - 2);
     });
 
     // 绘制食物
     ctx.fillStyle = '#e74c3c';
-    ctx.fillRect(food.x * gridSize, food.y * gridSize, gridSize - 2, gridSize - 2);
+    ctx.fillRect(food.x * gridSize + 1, food.y * gridSize + 1, gridSize - 2, gridSize - 2);
 }
 
 // 键盘控制

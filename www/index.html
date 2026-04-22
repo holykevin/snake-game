@@ -12,9 +12,33 @@
     <link rel="apple-touch-icon" href="icon-192.png">
 </head>
 <body>
+    <!-- 烟花效果画布 -->
+    <canvas id="fireworksCanvas" class="fireworks-canvas"></canvas>
+
+    <!-- 登录/注册模态框 -->
+    <div id="authModal" class="modal">
+        <div class="modal-content">
+            <h2 id="authTitle">登录</h2>
+            <input type="text" id="authUsername" placeholder="用户名" maxlength="20">
+            <input type="password" id="authPassword" placeholder="密码">
+            <div class="modal-buttons">
+                <button id="loginBtn" class="modal-btn primary">登录</button>
+                <button id="registerBtn" class="modal-btn secondary">注册</button>
+            </div>
+            <p id="authMessage" class="auth-message"></p>
+        </div>
+    </div>
+
+    <!-- 用户信息栏 -->
+    <div id="userBar" class="user-bar" style="display: none;">
+        <span>玩家: <strong id="usernameDisplay"></strong></span>
+        <button id="logoutBtn" class="logout-btn">登出</button>
+    </div>
+
     <div class="game-container">
         <canvas id="gameCanvas" width="400" height="400"></canvas>
         <div class="score-board">得分: <span id="score">0</span></div>
+        <div class="high-score-board">最高分: <span id="highScore">0</span></div>
         <div class="game-status" id="gameStatus">点击"开始游戏"开始</div>
         <div class="difficulty-buttons">
             <button id="easyMode" class="difficulty-button active">简单模式</button>
@@ -36,6 +60,9 @@
             </div>
         </div>
     </div>
+    <script src="auth.js"></script>
+    <script src="scores.js"></script>
+    <script src="fireworks.js"></script>
     <script src="game.js"></script>
     <script>
         // 注册 Service Worker

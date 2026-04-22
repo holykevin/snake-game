@@ -1,3 +1,4 @@
+// 游戏核心变量
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 const gridSize = 20;
@@ -9,10 +10,102 @@ let dx = 0;
 let dy = 0;
 let score = 0;
 let lastMoveTime = 0;
-let movementInterval = 200; // 初始速度设为一般模式
-let gameRunning = false; // 游戏是否运行中
-let animationId = null; // 动画ID，用于取消动画
+let movementInterval = 200;
+let gameRunning = false;
+let animationId = null;
+let currentMode = 'normal'; // 当前游戏模式
 
+// DOM 元素
+const authModal = document.getElementById('authModal');
+const userBar = document.getElementById('userBar');
+const usernameDisplay = document.getElementById('usernameDisplay');
+const highScoreDisplay = document.getElementById('highScore');
+const gameStatusDisplay = document.getElementById('gameStatus');
+const scoreDisplay = document.getElementById('score');
+
+// 初始化应用
+function initApp() {
+    if (Auth.isLoggedIn()) {
+        showGameInterface();
+    } else {
+        showAuthModal();
+    }
+    setupAuthListeners();
+}
+
+// 显示登录/注册模态框
+function showAuthModal() {
+    authModal.style.display = 'flex';
+    userBar.style.display = 'none';
+}
+
+// 显示游戏界面
+function showGameInterface() {
+    authModal.style.display = 'none';
+    userBar.style.display = 'flex';
+    usernameDisplay.textContent = Auth.getCurrentUser();
+    updateHighScoreDisplay();
+}
+
+// 更新最高分显示
+function updateHighScoreDisplay() {
+    const username = Auth.getCurrentUser();
+    if (username) {
+        const highScore = Scores.getHighScore(username, currentMode);
+        highScoreDisplay.textContent = highScore;
+    }
+}
+
+// 设置认证相关监听器
+function setupAuthListeners() {
+    // 登录按钮
+    document.getElementById('loginBtn').addEventListener('click', () => {
+        const username = document.getElementById('authUsername').value.trim();
+        const password = document.getElementById('authPassword').value;
+        const result = Auth.login(username, password);
+        handleAuthResult(result);
+    });
+
+    // 注册按钮
+    document.getElementById('registerBtn').addEventListener('click', () => {
+        const username = document.getElementById('authUsername').value.trim();
+        const password = document.getElementById('authPassword').value;
+        const result = Auth.register(username, password);
+        handleAuthResult(result);
+    });
+
+    // 登出按钮
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+        Auth.logout();
+        showAuthModal();
+        resetGame();
+    });
+
+    // 回车键登录
+    document.getElementById('authPassword').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            document.getElementById('loginBtn').click();
+        }
+    });
+}
+
+// 处理认证结果
+function handleAuthResult(result) {
+    const messageEl = document.getElementById('authMessage');
+    messageEl.textContent = result.message;
+    messageEl.className = result.success ? 'auth-message success' : 'auth-message';
+
+    if (result.success) {
+        setTimeout(() => {
+            showGameInterface();
+            messageEl.textContent = '';
+            document.getElementById('authUsername').value = '';
+            document.getElementById('authPassword').value = '';
+        }, 500);
+    }
+}
+
+// 游戏主循环
 function gameLoop(currentTime) {
     if (!gameRunning) return;
 
@@ -21,20 +114,18 @@ function gameLoop(currentTime) {
         return;
     }
     lastMoveTime = currentTime;
-    // 移动蛇身
+
     const head = {x: snake[0].x + dx, y: snake[0].y + dy};
     snake.unshift(head);
 
-    // 吃食物检测
     if(head.x === food.x && head.y === food.y) {
         score += 10;
-        document.getElementById('score').textContent = score;
+        scoreDisplay.textContent = score;
         generateFood();
     } else {
         snake.pop();
     }
 
-    // 碰撞检测
     if(head.x < 0 || head.x >= tileCount || head.y < 0 || head.y >= tileCount ||
        snake.slice(1).some(segment => segment.x === head.x && segment.y === head.y)) {
         gameOver();
@@ -42,35 +133,64 @@ function gameLoop(currentTime) {
     }
 
     drawGame();
-
     animationId = requestAnimationFrame(gameLoop);
 }
 
+// 游戏结束
 function gameOver() {
     gameRunning = false;
-    document.getElementById('gameStatus').textContent = '游戏结束！得分：' + score;
+
+    const username = Auth.getCurrentUser();
+    if (username) {
+        const isNewRecord = Scores.updateHighScore(username, currentMode, score);
+
+        if (isNewRecord) {
+            // 打破记录
+            showCelebrateMessage(Scores.getCelebrateMessage());
+            Fireworks.start();
+            updateHighScoreDisplay();
+        } else {
+            // 未打破记录
+            gameStatusDisplay.textContent = '游戏结束！得分：' + score + ' - ' + Scores.getEncourageMessage();
+        }
+    } else {
+        gameStatusDisplay.textContent = '游戏结束！得分：' + score;
+    }
+
     document.getElementById('startBtn').textContent = '重新开始';
 }
 
+// 显示庆祝消息
+function showCelebrateMessage(message) {
+    const msgEl = document.createElement('div');
+    msgEl.className = 'celebrate-message';
+    msgEl.textContent = message;
+    document.body.appendChild(msgEl);
+
+    setTimeout(() => {
+        msgEl.remove();
+    }, 3000);
+}
+
+// 开始游戏
 function startGame() {
     if (gameRunning) return;
 
     if (dx === 0 && dy === 0) {
-        // 如果蛇还没移动，设置初始方向
         dx = 1;
     }
     gameRunning = true;
-    document.getElementById('gameStatus').textContent = '游戏进行中...';
+    gameStatusDisplay.textContent = '游戏进行中...';
     lastMoveTime = performance.now();
     animationId = requestAnimationFrame(gameLoop);
 }
 
+// 生成食物
 function generateFood() {
     food = {
         x: Math.floor(Math.random() * tileCount),
         y: Math.floor(Math.random() * tileCount)
     };
-    // 确保食物不生成在蛇身上
     while(snake.some(segment => segment.x === food.x && segment.y === food.y)) {
         food = {
             x: Math.floor(Math.random() * tileCount),
@@ -79,6 +199,7 @@ function generateFood() {
     }
 }
 
+// 重置游戏
 function resetGame() {
     if (animationId) {
         cancelAnimationFrame(animationId);
@@ -89,15 +210,15 @@ function resetGame() {
     dx = 0;
     dy = 0;
     score = 0;
-    document.getElementById('score').textContent = score;
-    document.getElementById('gameStatus').textContent = '点击"开始游戏"开始';
+    scoreDisplay.textContent = score;
+    gameStatusDisplay.textContent = '点击"开始游戏"开始';
     document.getElementById('startBtn').textContent = '开始游戏';
     generateFood();
     drawGame();
 }
 
+// 绘制游戏画面
 function drawGame() {
-    // 清空画布
     ctx.fillStyle = '#34495e';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -105,12 +226,10 @@ function drawGame() {
     ctx.strokeStyle = '#4a6278';
     ctx.lineWidth = 0.5;
     for (let i = 0; i <= tileCount; i++) {
-        // 垂直线
         ctx.beginPath();
         ctx.moveTo(i * gridSize, 0);
         ctx.lineTo(i * gridSize, canvas.height);
         ctx.stroke();
-        // 水平线
         ctx.beginPath();
         ctx.moveTo(0, i * gridSize);
         ctx.lineTo(canvas.width, i * gridSize);
@@ -150,8 +269,7 @@ document.addEventListener('keydown', (e) => {
             if(dx !== -1) { dx = 1; dy = 0; moved = true; }
             break;
     }
-    // 如果游戏未开始，自动开始
-    if (moved && !gameRunning) {
+    if (moved && !gameRunning && Auth.isLoggedIn()) {
         startGame();
     }
 });
@@ -159,12 +277,12 @@ document.addEventListener('keydown', (e) => {
 // 触控支持
 let touchStartX = 0;
 let touchStartY = 0;
-const minSwipeDistance = 30; // 最小滑动距离
+const minSwipeDistance = 30;
 
 canvas.addEventListener('touchstart', (e) => {
     touchStartX = e.touches[0].clientX;
     touchStartY = e.touches[0].clientY;
-    e.preventDefault(); // 防止页面滚动
+    e.preventDefault();
 }, { passive: false });
 
 canvas.addEventListener('touchend', (e) => {
@@ -172,37 +290,22 @@ canvas.addEventListener('touchend', (e) => {
 
     const touchEndX = e.changedTouches[0].clientX;
     const touchEndY = e.changedTouches[0].clientY;
-
     const diffX = touchEndX - touchStartX;
     const diffY = touchEndY - touchStartY;
 
-    // 判断滑动方向（取绝对值较大的方向）
     if (Math.abs(diffX) > Math.abs(diffY)) {
-        // 水平滑动
         if (Math.abs(diffX) > minSwipeDistance) {
-            if (diffX > 0 && dx !== -1) {
-                // 向右滑动
-                dx = 1; dy = 0;
-            } else if (diffX < 0 && dx !== 1) {
-                // 向左滑动
-                dx = -1; dy = 0;
-            }
+            if (diffX > 0 && dx !== -1) { dx = 1; dy = 0; }
+            else if (diffX < 0 && dx !== 1) { dx = -1; dy = 0; }
         }
     } else {
-        // 垂直滑动
         if (Math.abs(diffY) > minSwipeDistance) {
-            if (diffY > 0 && dy !== -1) {
-                // 向下滑动
-                dx = 0; dy = 1;
-            } else if (diffY < 0 && dy !== 1) {
-                // 向上滑动
-                dx = 0; dy = -1;
-            }
+            if (diffY > 0 && dy !== -1) { dx = 0; dy = 1; }
+            else if (diffY < 0 && dy !== 1) { dx = 0; dy = -1; }
         }
     }
 
-    // 如果游戏未开始，自动开始
-    if (!gameRunning && (dx !== 0 || dy !== 0)) {
+    if (!gameRunning && (dx !== 0 || dy !== 0) && Auth.isLoggedIn()) {
         startGame();
     }
 
@@ -211,45 +314,55 @@ canvas.addEventListener('touchend', (e) => {
     e.preventDefault();
 }, { passive: false });
 
-// 虚拟方向键控制（移动端）
+// 虚拟方向键控制
 document.getElementById('btnUp').addEventListener('click', () => {
     if(dy !== 1) { dx = 0; dy = -1; }
-    if (!gameRunning) startGame();
+    if (!gameRunning && Auth.isLoggedIn()) startGame();
 });
 document.getElementById('btnDown').addEventListener('click', () => {
     if(dy !== -1) { dx = 0; dy = 1; }
-    if (!gameRunning) startGame();
+    if (!gameRunning && Auth.isLoggedIn()) startGame();
 });
 document.getElementById('btnLeft').addEventListener('click', () => {
     if(dx !== 1) { dx = -1; dy = 0; }
-    if (!gameRunning) startGame();
+    if (!gameRunning && Auth.isLoggedIn()) startGame();
 });
 document.getElementById('btnRight').addEventListener('click', () => {
     if(dx !== -1) { dx = 1; dy = 0; }
-    if (!gameRunning) startGame();
+    if (!gameRunning && Auth.isLoggedIn()) startGame();
 });
 
 // 难度模式切换
 document.getElementById('easyMode').addEventListener('click', (e) => {
     movementInterval = 300;
+    currentMode = 'easy';
     document.querySelectorAll('.difficulty-button').forEach(btn => btn.classList.remove('active'));
     e.target.classList.add('active');
+    updateHighScoreDisplay();
 });
 
 document.getElementById('normalMode').addEventListener('click', (e) => {
     movementInterval = 200;
+    currentMode = 'normal';
     document.querySelectorAll('.difficulty-button').forEach(btn => btn.classList.remove('active'));
     e.target.classList.add('active');
+    updateHighScoreDisplay();
 });
 
 document.getElementById('hardMode').addEventListener('click', (e) => {
     movementInterval = 100;
+    currentMode = 'hard';
     document.querySelectorAll('.difficulty-button').forEach(btn => btn.classList.remove('active'));
     e.target.classList.add('active');
+    updateHighScoreDisplay();
 });
 
 // 开始和重置按钮
 document.getElementById('startBtn').addEventListener('click', () => {
+    if (!Auth.isLoggedIn()) {
+        showAuthModal();
+        return;
+    }
     if (!gameRunning) {
         if (document.getElementById('startBtn').textContent === '重新开始') {
             resetGame();
@@ -258,8 +371,13 @@ document.getElementById('startBtn').addEventListener('click', () => {
     }
 });
 
-document.getElementById('resetBtn').addEventListener('click', resetGame);
+document.getElementById('resetBtn').addEventListener('click', () => {
+    if (Auth.isLoggedIn()) {
+        resetGame();
+    }
+});
 
-// 启动游戏
+// 初始化
 generateFood();
 drawGame();
+initApp();

@@ -240,6 +240,7 @@
     height: 100%;
     pointer-events: none;
     z-index: 999;
+    background-color: transparent;
 }
 
 /* 庆祝消息样式 */

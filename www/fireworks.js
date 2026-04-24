@@ -23,7 +23,7 @@ const Fireworks = {
     // 粒子类
     createParticle(x, y, color) {
         const angle = Math.random() * Math.PI * 2;
-        const speed = Math.random() * 6 + 2;
+        const speed = Math.random() * 8 + 3;
         return {
             x: x,
             y: y,
@@ -31,15 +31,15 @@ const Fireworks = {
             vy: Math.sin(angle) * speed,
             color: color,
             alpha: 1,
-            size: Math.random() * 3 + 2,
-            decay: Math.random() * 0.02 + 0.01
+            size: Math.random() * 5 + 3,
+            decay: Math.random() * 0.015 + 0.008
         };
     },
 
     // 创建烟花爆炸
     createExplosion(x, y) {
-        const colors = ['#ff0000', '#ff6600', '#ffff00', '#00ff00', '#00ffff', '#ff00ff', '#ffffff'];
-        const particleCount = 80;
+        const colors = ['#ff0000', '#ff6600', '#ffff00', '#00ff00', '#00ffff', '#ff00ff', '#ffffff', '#ff69b4', '#ffd700'];
+        const particleCount = 120;
 
         for (let i = 0; i < particleCount; i++) {
             const color = colors[Math.floor(Math.random() * colors.length)];
@@ -51,6 +51,9 @@ const Fireworks = {
     drawParticle(particle) {
         this.ctx.save();
         this.ctx.globalAlpha = particle.alpha;
+        // 添加发光效果
+        this.ctx.shadowBlur = 10;
+        this.ctx.shadowColor = particle.color;
         this.ctx.fillStyle = particle.color;
         this.ctx.beginPath();
         this.ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
@@ -71,8 +74,8 @@ const Fireworks = {
     animate() {
         if (!this.isRunning) return;
 
-        this.ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
-        this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+        // 清除画布（完全透明）
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 
         this.particles = this.particles.filter(particle => {
             this.drawParticle(particle);
@@ -93,21 +96,23 @@ const Fireworks = {
         this.canvas.style.display = 'block';
 
         // 创建多个烟花爆炸点
-        const explosionCount = 5;
-        const interval = 400;
+        const explosionCount = 8;
+        const interval = 300;
 
         for (let i = 0; i < explosionCount; i++) {
             setTimeout(() => {
-                const x = Math.random() * this.canvas.width * 0.6 + this.canvas.width * 0.2;
-                const y = Math.random() * this.canvas.height * 0.4 + this.canvas.height * 0.2;
-                this.createExplosion(x, y);
+                if (this.isRunning) {
+                    const x = Math.random() * this.canvas.width * 0.6 + this.canvas.width * 0.2;
+                    const y = Math.random() * this.canvas.height * 0.5 + this.canvas.height * 0.1;
+                    this.createExplosion(x, y);
+                }
             }, i * interval);
         }
 
         this.animate();
 
-        // 4秒后自动停止
-        setTimeout(() => this.stop(), 4000);
+        // 5秒后自动停止
+        setTimeout(() => this.stop(), 5000);
     },
 
     // 停止烟花效果

@@ -10,10 +10,10 @@ let dx = 0;
 let dy = 0;
 let score = 0;
 let lastMoveTime = 0;
-let movementInterval = 200;
+let movementInterval = 300;
 let gameRunning = false;
 let animationId = null;
-let currentMode = 'normal'; // 当前游戏模式
+let currentMode = 'easy'; // 当前游戏模式（默认简单模式）
 
 // DOM 元素
 const authModal = document.getElementById('authModal');
@@ -247,9 +247,141 @@ function drawGame() {
         ctx.fillRect(segment.x * gridSize + 1, segment.y * gridSize + 1, gridSize - 2, gridSize - 2);
     });
 
-    // 绘制食物
+    // 绘制食物（根据模式显示不同形状）
+    drawFood();
+}
+
+// 绘制食物（根据难度模式显示不同水果）
+function drawFood() {
+    const x = food.x * gridSize;
+    const y = food.y * gridSize;
+    const size = gridSize;
+
+    switch(currentMode) {
+        case 'easy':
+            drawApple(x, y, size);
+            break;
+        case 'normal':
+            drawOrange(x, y, size);
+            break;
+        case 'hard':
+            drawDurian(x, y, size);
+            break;
+        default:
+            drawApple(x, y, size);
+    }
+}
+
+// 绘制红苹果
+function drawApple(x, y, size) {
+    const centerX = x + size / 2;
+    const centerY = y + size / 2;
+    const radius = size / 2 - 1;
+
+    // 苹果主体（红色）
+    ctx.beginPath();
+    ctx.arc(centerX, centerY + 1, radius, 0, Math.PI * 2);
     ctx.fillStyle = '#e74c3c';
-    ctx.fillRect(food.x * gridSize + 1, food.y * gridSize + 1, gridSize - 2, gridSize - 2);
+    ctx.fill();
+
+    // 苹果高光
+    ctx.beginPath();
+    ctx.arc(centerX - radius/3, centerY - radius/3, radius/4, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+    ctx.fill();
+
+    // 苹果茎（棕色）
+    ctx.beginPath();
+    ctx.moveTo(centerX, centerY - radius + 1);
+    ctx.lineTo(centerX + 1, centerY - radius - 3);
+    ctx.strokeStyle = '#8B4513';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    ctx.lineWidth = 1; // Reset to default
+
+    // 苹果叶子（绿色）
+    ctx.beginPath();
+    ctx.ellipse(centerX + 4, centerY - radius - 1, 4, 2, Math.PI / 4, 0, Math.PI * 2);
+    ctx.fillStyle = '#27ae60';
+    ctx.fill();
+}
+
+// 绘制橙色橙子
+function drawOrange(x, y, size) {
+    const centerX = x + size / 2;
+    const centerY = y + size / 2;
+    const radius = size / 2 - 1;
+
+    // 橙子主体（橙色）
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+    ctx.fillStyle = '#f39c12';
+    ctx.fill();
+
+    // 橙子纹理（中心点）
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, 2, 0, Math.PI * 2);
+    ctx.fillStyle = '#e67e22';
+    ctx.fill();
+
+    // 橙子高光
+    ctx.beginPath();
+    ctx.arc(centerX - radius/3, centerY - radius/3, radius/4, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+    ctx.fill();
+
+    // 橙子顶部小茎
+    ctx.beginPath();
+    ctx.arc(centerX, centerY - radius + 1, 2, 0, Math.PI * 2);
+    ctx.fillStyle = '#27ae60';
+    ctx.fill();
+}
+
+// 绘制榴莲
+function drawDurian(x, y, size) {
+    const centerX = x + size / 2;
+    const centerY = y + size / 2;
+    const radius = size / 2 - 1;
+
+    // 榴莲主体（黄绿色椭圆形）
+    ctx.beginPath();
+    ctx.ellipse(centerX, centerY, radius, radius * 0.9, 0, 0, Math.PI * 2);
+    ctx.fillStyle = '#9acd32';
+    ctx.fill();
+
+    // 榴莲刺（多个小三角形）
+    ctx.fillStyle = '#8B8B00';
+    const spikeCount = 8;
+    for (let i = 0; i < spikeCount; i++) {
+        const angle = (i / spikeCount) * Math.PI * 2;
+        const spikeX = centerX + Math.cos(angle) * radius * 0.7;
+        const spikeY = centerY + Math.sin(angle) * radius * 0.6;
+        drawSpike(spikeX, spikeY, 3, angle);
+    }
+
+    // 榴莲柄（棕色）
+    ctx.beginPath();
+    ctx.moveTo(centerX - 2, y + 1);
+    ctx.lineTo(centerX + 2, y + 1);
+    ctx.lineTo(centerX + 1, y - 2);
+    ctx.lineTo(centerX - 1, y - 2);
+    ctx.closePath();
+    ctx.fillStyle = '#8B4513';
+    ctx.fill();
+}
+
+// 绘制榴莲刺
+function drawSpike(x, y, size, angle) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(angle + Math.PI / 2); // 旋转使刺指向外侧
+    ctx.beginPath();
+    ctx.moveTo(0, -size);
+    ctx.lineTo(size/2, size/2);
+    ctx.lineTo(-size/2, size/2);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
 }
 
 // 键盘控制
